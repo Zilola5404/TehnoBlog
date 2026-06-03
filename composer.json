@@ -1,0 +1,19 @@
+{
+  "name": "zilala/blog-catalog",
+  "description": "Plain PHP blog with Smarty and PDO.",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "smarty/smarty": "^4.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  }
+  ,
+  "scripts": {
+    "clear-cache": "php bin/clear-cache",
+    "build-assets": "npm run build:css"
+  }
+}

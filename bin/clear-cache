@@ -1,0 +1,47 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Утилита для очистки компилированных шаблонов и кеша Smarty.
+// Используйте при разработке, чтобы шаблоны и стили подхватились немедленно.
+
+$root = dirname(__DIR__);
+$templatesC = $root . '/var/templates_c';
+$cacheDir = $root . '/var/cache';
+
+$remove = static function (string $path): void {
+    if (!is_dir($path)) {
+        return;
+    }
+    $it = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
+    $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($files as $file) {
+        if ($file->isDir()) {
+            @rmdir($file->getRealPath());
+        } else {
+            @unlink($file->getRealPath());
+        }
+    }
+};
+
+try {
+    $remove($templatesC);
+    $remove($cacheDir);
+
+    // Убедимся, что каталоги существуют
+    @mkdir($templatesC, 0775, true);
+    @mkdir($cacheDir, 0775, true);
+
+    // Попробуем установить права собственности, если это возможно 
+    if (function_exists('posix_getuid')) {
+        @chown($templatesC, 'www-data');
+        @chown($cacheDir, 'www-data');
+    }
+
+    echo "Cleared Smarty caches.\n";
+    exit(0);
+} catch (Throwable $e) {
+    fwrite(STDERR, "Failed to clear cache: " . $e->getMessage() . "\n");
+    exit(1);
+}
